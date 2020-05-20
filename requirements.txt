@@ -1,0 +1,7 @@
+mypy==0.670
+xlrd==1.2.0
+numpy==1.15.1
+pandas==0.24.2
+terminaltables==3.1.0
+cached-property-bel==1.0.1
+git+ssh://git@github.com/jusjusjus/edfdb.git
