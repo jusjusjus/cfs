@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import pandas as pd
 
-from .resources import root_dir
+from .resources import root_dir, metafile
 from edfdb import EDF
 
 
@@ -84,7 +84,6 @@ class Dataset:
 
     @cached_property
     def _subject_info(self):
-        metafile = join(root_dir, 'datasets/cfs-visit5-dataset-0.4.0.csv')
         df = pd.read_csv(metafile)
         df['nsrrid'] = df.nsrrid.apply(str)
         df.set_index('nsrrid', inplace=True)
