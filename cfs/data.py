@@ -1,13 +1,12 @@
 
 from os.path import join, exists, dirname, splitext
-from cached_property import cached_property
+from functools import cached_property
 import xml.etree.ElementTree as ET
 
-import numpy as np
 import pandas as pd
 
 from .resources import root_dir, metafile
-from edfdb import EDF
+from edfpy import EDF
 
 
 # The dict translates the Profusion AASM sleep-staging codes into the stage
@@ -63,7 +62,7 @@ class Dataset:
         int_stages = map(int, (x.text for x in xml_stages)) # type: ignore
         stage_labels = list(map(sleep_stage_map.get, int_stages))
         df = pd.DataFrame(data={
-            't0': duration * np.arange(len(stage_labels)),
+            't0': [s * duration for s in range(len(stage_labels))],
             'dt': duration,
             'stage': stage_labels
         })
