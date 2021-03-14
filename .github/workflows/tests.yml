@@ -41,4 +41,21 @@ jobs:
 
       - name: 'Run line-indention checker'
         run: make check.linting
+
+  units:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v2
+
+      - name: 'Setup Python 3.8'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: 'Install dependencies'
+        run: make install.dev
+
+      - name: 'Run unit tests'
+        run: make check.units
 ...

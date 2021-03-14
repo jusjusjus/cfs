@@ -1,24 +1,13 @@
-
 from os.path import join, exists, dirname, splitext
-from functools import cached_property
-import xml.etree.ElementTree as ET
+from functools import cached_property, lru_cache
 
 import pandas as pd
-
-from .resources import root_dir, metafile
 from edfpy import EDF
 
+from .resources import root_dir, metafile
+from .profusion import Profusion
 
-# The dict translates the Profusion AASM sleep-staging codes into the stage
-# names.
-
-sleep_stage_map = {
-    0: 'Wake',
-    1: 'N1',
-    2: 'N2',
-    3: 'N3',
-    5: 'R'
-}
+cache = lru_cache
 
 
 class Dataset:
@@ -32,48 +21,33 @@ class Dataset:
             'xml': self.xml(subject_id),
             'sid': subject_id
         }
-        info = self.subject_info(subject_id, as_dict=True)
-        if info:
-            entry.update(**info)
-
+        info = self.subject_info(subject_id, as_dict=True) or {}
+        entry.update(**info)
         return entry
 
     def __len__(self):
         return len(self.subject_ids)
 
+    @cache
     def edf(self, subject_id):
+        if isinstance(subject_id, int):
+            subject_id = self.subject_ids[subject_id]
+
         filename = join(root_dir, self.files.loc[subject_id].filenames.edf)
         return EDF.read_file(filename)
 
+    @cache
     def xml(self, subject_id):
-        filename = join(root_dir, self.files.loc[subject_id].filenames.xml)
-        root = ET.parse(filename).getroot()
-
-        def find(tag):
-            element = root.find(tag)
-            assert element is not None, f"Missing tag '{tag}'"
-            return element
-
-        try:
-            element = find('EpochLength')
-            text = element.text
-            assert isinstance(text, str), f"Error in 'EpochLength' {text}"
-            duration = float(text)
-            el = find('SleepStages')
-            xml_stages = el.getchildren()
-        except AttributeError as err:
-            raise ValueError(f"Broken xml file: {str(err)}")
-
-        int_stages = map(int, (x.text for x in xml_stages))  # type: ignore
-        stage_labels = list(map(sleep_stage_map.get, int_stages))
+        filepath = join(root_dir, self.files.loc[subject_id].filenames.xml)
+        profusion = Profusion.read(filepath)
+        dt = profusion.epoch_length
+        labels = profusion.sleep_stages
+        t0 = [s * dt for s in range(len(labels))]
         df = pd.DataFrame(data={
-            't0': [s * duration for s in range(len(stage_labels))],
-            'dt': duration,
-            'stage': stage_labels
+            't0': t0, 'dt': dt, 'stage': labels
         })
         df = df[df.stage.apply(lambda x: x is not None)]
-        df = df[['t0', 'dt', 'stage']]
-        return df
+        return df[['t0', 'dt', 'stage']]
 
     @cached_property
     def subject_ids(self):
