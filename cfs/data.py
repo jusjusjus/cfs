@@ -48,18 +48,23 @@ class Dataset:
     def xml(self, subject_id):
         filename = join(root_dir, self.files.loc[subject_id].filenames.xml)
         root = ET.parse(filename).getroot()
+
+        def find(tag):
+            element = root.find(tag)
+            assert element is not None, f"Missing tag '{tag}'"
+            return element
+
         try:
-            el = root.find('EpochLength')
-            assert el is not None, "Missing element 'EpochLength'"
-            assert isinstance(el.text, str), "Broken value in element 'EpochLength' [%s]"%el.text
-            duration = float(el.text)
-            el = root.find('SleepStages')
-            assert el is not None, "Missing element 'SleepStages'"
+            element = find('EpochLength')
+            text = element.text
+            assert isinstance(text, str), f"Error in 'EpochLength' {text}"
+            duration = float(text)
+            el = find('SleepStages')
             xml_stages = el.getchildren()
         except AttributeError as err:
             raise ValueError(f"Broken xml file: {str(err)}")
 
-        int_stages = map(int, (x.text for x in xml_stages)) # type: ignore
+        int_stages = map(int, (x.text for x in xml_stages))  # type: ignore
         stage_labels = list(map(sleep_stage_map.get, int_stages))
         df = pd.DataFrame(data={
             't0': [s * duration for s in range(len(stage_labels))],
@@ -95,18 +100,22 @@ class Dataset:
         df = pd.read_csv(filename, sep='  ', header=None, engine='python')
         df.columns = ['md5sum', 'filenames']
         del df['md5sum']
-        fn = lambda filename: splitext(filename)[1][1:]
-        df['type'] = df.filenames.apply(fn)
+        df['type'] = df.filenames.apply(
+            lambda filename: splitext(filename)[1][1:]
+        )
         df = df[(df.type == 'xml') | (df.type == 'edf')]
-        i = df.filenames.str.contains('profusion') | df.filenames.str.contains('edfs')
+        i = df.filenames.str.contains('profusion') \
+            | df.filenames.str.contains('edfs')
         df = df[i]
         df['sid'] = None
         index = df['type'] == 'edf'
-        fn = lambda filename: splitext(filename)[0].split('-')[-1]
-        df['sid'][index] = df.filenames[index].apply(fn)
+        df['sid'][index] = df.filenames[index].apply(
+            lambda filename: splitext(filename)[0].split('-')[-1]
+        )
         index = df['type'] == 'xml'
-        fn = lambda filename: filename.split('-')[-2]
-        df['sid'][index] = df.filenames[index].apply(fn)
+        df['sid'][index] = df.filenames[index].apply(
+            lambda filename: filename.split('-')[-2]
+        )
         df = df.reset_index().set_index(['sid', 'type'])
         df = df.sort_index().unstack('type')
         del df['index']

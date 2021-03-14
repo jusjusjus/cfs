@@ -1,7 +1,7 @@
 check: check.linting check.types
 
 check.types:
-	mypy --ignore-missing-imports edfpy
+	mypy --ignore-missing-imports cfs
 
 check.linting:
 	flake8
