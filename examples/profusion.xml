@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CMPStudyConfig>
+  <EpochLength>30</EpochLength>
+  <StepChannels>
+    <StepChannel>
+      <Input>POSITION</Input>
+      <Labels>
+        <Label>BACK</Label>
+        <Label>LEFT</Label>
+        <Label>RIGHT</Label>
+        <Label>PRONE</Label>
+      </Labels>
+    </StepChannel>
+  </StepChannels>
+  <ScoredEventSettings>
+    <ScoredEventSetting>
+      <Name>Central Apnea</Name>
+      <Colour>16689645</Colour>
+      <TextColour>4194304</TextColour>
+      <Input>AIRFLOW</Input>
+    </ScoredEventSetting>
+  </ScoredEventSettings>
+  <ScoredEvents>
+    <ScoredEvent>
+      <Name>Arousal (ASDA)</Name>
+      <Start>37622.1</Start>
+      <Duration>27.9</Duration>
+      <Input>C3</Input>
+    </ScoredEvent>
+  </ScoredEvents>
+  <SleepStages>
+    <SleepStage>0</SleepStage>
+    <SleepStage>1</SleepStage>
+    <SleepStage>2</SleepStage>
+    <SleepStage>3</SleepStage>
+    <SleepStage>4</SleepStage>
+    <SleepStage>5</SleepStage>
+  </SleepStages>
+  <Montage>
+    <TracePanes>
+      <TracePane>
+        <BkColour>14546935</BkColour>
+        <Timebase>30</Timebase>
+        <BkColour>14546935</BkColour>
+        <Timebase>300</Timebase>
+        <Traces>
+          <Trace>
+            <Colour>16252928</Colour>
+            <HighPass>0.3</HighPass>
+            <Input>LOC</Input>
+            <Ref/>
+            <LowerLimit>-5.68888887452583E-02</LowerLimit>
+            <LowPass>35</LowPass>
+            <Notch>0</Notch>
+            <NumGridLines>0</NumGridLines>
+            <RelativeSize>1</RelativeSize>
+            <UpperLimit>5.68888887452583E-02</UpperLimit>
+            <Zoom>9</Zoom>
+          </Trace>
+        </Traces>
+      </TracePane>
+    </TracePanes>
+  </Montage>
+</CMPStudyConfig>
