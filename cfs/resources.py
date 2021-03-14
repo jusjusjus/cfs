@@ -1,6 +1,5 @@
-
 from os import environ as env
-from os.path import join, exists, isdir
+from os.path import join, exists
 
 root_dir_key = "CFSROOTDIR"
 
