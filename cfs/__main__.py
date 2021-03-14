@@ -1,5 +1,5 @@
 #!/usr/bin/env python
+from cfs.check_md5 import check_md5
 
 if __name__ == "__main__":
-    import cfs
-    cfs.check_md5()
+    check_md5()
