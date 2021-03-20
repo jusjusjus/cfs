@@ -14,5 +14,5 @@ def test_epoch_length(profusion):
 
 
 def test_sleep_stages(profusion):
-    expected = 'Wake N1 N2 N3 S4 R'.split()
+    expected = 'Wake N1 N2 N3 R'.split()
     assert profusion.sleep_stages == expected
