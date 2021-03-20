@@ -1,21 +1,21 @@
-from typing import List
+from typing import List, Dict, Optional
 from functools import cached_property
 import xml.etree.ElementTree as ET
 
 
-sleep_stage_map = {
+sleep_stage_map: Dict[int, Optional[str]] = {
     0: 'Wake',
     1: 'N1',
     2: 'N2',
     3: 'N3',
-    4: 'S4',
+    4: None,
     5: 'R'
 }
 
 
 class Profusion:
 
-    def __init__(self, root: str):
+    def __init__(self, root):
         self.root = root
 
     @classmethod
@@ -29,7 +29,7 @@ class Profusion:
         return float(element.text)
 
     @cached_property
-    def sleep_stages(self) -> List[str]:
+    def sleep_stages(self) -> List[Optional[str]]:
         element = self.find('SleepStages')
         stages_txt = map(lambda el: el.text, list(element))
         stages_int = map(int, stages_txt)
