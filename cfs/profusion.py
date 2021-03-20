@@ -1,3 +1,4 @@
+from typing import List
 from functools import cached_property
 import xml.etree.ElementTree as ET
 
@@ -14,11 +15,11 @@ sleep_stage_map = {
 
 class Profusion:
 
-    def __init__(self, root):
+    def __init__(self, root: str):
         self.root = root
 
     @classmethod
-    def read(cls, filepath):
+    def read(cls, filepath: str):
         root = ET.parse(filepath).getroot()
         return cls(root)
 
@@ -28,14 +29,14 @@ class Profusion:
         return float(element.text)
 
     @cached_property
-    def sleep_stages(self) -> list:
+    def sleep_stages(self) -> List[str]:
         element = self.find('SleepStages')
         stages_txt = map(lambda el: el.text, list(element))
         stages_int = map(int, stages_txt)
         stages = map(sleep_stage_map.get, stages_int)
         return list(stages)
 
-    def find(self, tag, root=None):
+    def find(self, tag: str, root=None):
         root = root or self.root
         element = root.find(tag)
         assert element is not None, f"Missing tag '{tag}'"

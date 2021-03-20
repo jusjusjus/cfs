@@ -2,8 +2,8 @@ from os import environ as env
 from os.path import join, exists
 
 root_dir_key = "CFSROOTDIR"
-root_dir = None
-metafile = None
+root_dir = ''
+metafile = ''
 if env.get('CI') is None:
     assert root_dir_key in env, f"""
     Add path to cfs dataset as an environment variable:

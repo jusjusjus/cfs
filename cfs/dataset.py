@@ -1,3 +1,4 @@
+from typing import List, Union
 from os.path import join, exists, dirname, splitext
 from functools import cached_property, lru_cache
 
@@ -9,10 +10,16 @@ from .profusion import Profusion
 
 cache = lru_cache
 
+SidType = Union[int, str]
+
 
 class Dataset:
 
-    def __getitem__(self, subject_id):
+    def __init__(self):
+        self.metafile = metafile
+        self.md5sums = join(dirname(__file__), "md5sums.txt")
+
+    def __getitem__(self, subject_id: SidType):
         if isinstance(subject_id, int):
             subject_id = self.subject_ids[subject_id]
 
@@ -25,11 +32,11 @@ class Dataset:
         entry.update(**info)
         return entry
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.subject_ids)
 
     @cache
-    def edf(self, subject_id):
+    def edf(self, subject_id: SidType):
         if isinstance(subject_id, int):
             subject_id = self.subject_ids[subject_id]
 
@@ -37,7 +44,10 @@ class Dataset:
         return EDF.read_file(filename)
 
     @cache
-    def xml(self, subject_id):
+    def xml(self, subject_id: SidType) -> pd.DataFrame:
+        if isinstance(subject_id, int):
+            subject_id = self.subject_ids[subject_id]
+
         filepath = join(root_dir, self.files.loc[subject_id].filenames.xml)
         profusion = Profusion.read(filepath)
         dt = profusion.epoch_length
@@ -47,13 +57,14 @@ class Dataset:
             't0': t0, 'dt': dt, 'stage': labels
         })
         df = df[df.stage.apply(lambda x: x is not None)]
-        return df[['t0', 'dt', 'stage']]
+        out: pd.DataFrame = df[['t0', 'dt', 'stage']]
+        return out
 
     @cached_property
-    def subject_ids(self):
-        return list(self.files.index)
+    def subject_ids(self) -> List[str]:
+        return list(map(str, self.files.index))
 
-    def subject_info(self, subject_id, as_dict=False):
+    def subject_info(self, subject_id: SidType, as_dict: bool = False):
         if isinstance(subject_id, int):
             subject_id = self.subject_ids[subject_id]
 
@@ -61,18 +72,19 @@ class Dataset:
         return info.to_dict() if as_dict else info
 
     @cached_property
-    def _subject_info(self):
-        df = pd.read_csv(metafile)
+    def _subject_info(self) -> pd.DataFrame:
+        df = pd.read_csv(self.metafile)
+        assert isinstance(df, pd.DataFrame)
         df['nsrrid'] = df.nsrrid.apply(str)
         df.set_index('nsrrid', inplace=True)
         return df
 
     @cached_property
-    def files(self):
-        filename = join(dirname(__file__), "md5sums.txt")
-        assert exists(filename), f"md5sums not found ({filename})"
-        df = pd.read_csv(filename, sep='  ', header=None, engine='python')
-        df.columns = ['md5sum', 'filenames']
+    def files(self) -> pd.DataFrame:
+        assert exists(self.md5sums), f"md5sums not found ({self.md5sums})"
+        df = pd.read_csv(self.md5sums, sep='  ', header=None, engine='python')
+        assert isinstance(df, pd.DataFrame)
+        df.columns = pd.Index(['md5sum', 'filenames'])
         del df['md5sum']
         df['type'] = df.filenames.apply(
             lambda filename: splitext(filename)[1][1:]
@@ -93,4 +105,5 @@ class Dataset:
         df = df.reset_index().set_index(['sid', 'type'])
         df = df.sort_index().unstack('type')
         del df['index']
+        assert isinstance(df, pd.DataFrame)
         return df
