@@ -3,7 +3,7 @@ from os.path import join, exists, dirname, splitext
 from functools import cached_property, lru_cache
 
 import pandas as pd
-from edfpy import EDF
+from edfpy import Reader
 
 from .resources import root_dir, metafile
 from .profusion import Profusion
@@ -41,7 +41,7 @@ class Dataset:
             subject_id = self.subject_ids[subject_id]
 
         filename = join(root_dir, self.files.loc[subject_id].filenames.edf)
-        return EDF.read_file(filename)
+        return Reader.open(filename)
 
     @cache
     def xml(self, subject_id: SidType) -> pd.DataFrame:
